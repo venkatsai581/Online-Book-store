@@ -8,18 +8,18 @@
 </head>
 <body>
     <div class="container">
-        <form id="LoginForm">
-            <h2>LoginForm</h2>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
-            <label for="mobileno">Mobile No:</label>
-            <input type="text" id="mobileno" name="mobileno" required>
+        <h2>Contact Form</h2>
+        <form>
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" required>
 
-            <label for="otp">Enter OTP:</label>
-            <input type="text" id="otp" name="otp" required>
-            <button type="button" onclick="sendOTP()">Send OTP</button>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
 
-            <button type="button" onclick="signIn()">Sign In</button>
+            <label for="message">Message</label>
+            <input type="text" id="message" name="message" required>
+
+            <button type="submit">Submit</button>
         </form>
     </div>
 
