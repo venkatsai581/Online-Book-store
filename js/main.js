@@ -2,59 +2,98 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartItems = document.getElementById('cartItems');
     const cartList = document.getElementById('cartList');
     const cartTotal = document.getElementById('cartTotal');
-    const booksSection = document.querySelector('.books');
-    const iconCart = document.querySelector('.cart');
-    const closeCart = document.querySelector('.close');
+    const booksSection = document.getElementById('booksSection');
+    const cartBtn = document.getElementById('cartBtn');
     const checkOut = document.querySelector('.checkOut');
-    const body = document.querySelector('body');
+    const searchInput = document.getElementById('searchInput');
+    const categorySelect = document.getElementById('categorySelect');
+    const sortBy = document.getElementById('sortBy');
+    const usernameDisplay = document.getElementById('usernameDisplay');
+    const loginLink = document.getElementById('loginLink');
+    const signinLink = document.getElementById('signinLink');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    // Initialize Bootstrap tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    [...tooltipTriggerList].forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+    // Static book data with categories
+    const books = [
+        { title: 'Book Title 1', author: 'Author Name', price: 19.99, image: 'https://m.media-amazon.com/images/I/51xbrR1AxbL.AC_SX250.jpg', category: 'Fiction' },
+        { title: 'Book Title 2', author: 'Author Name', price: 24.99, image: 'https://m.media-amazon.com/images/I/41n4z8Xv1BL.AC_SX250.jpg', category: 'Non-Fiction' },
+        { title: 'Book Title 3', author: 'Author Name', price: 14.99, image: 'https://m.media-amazon.com/images/I/51Lq5EZahEL.AC_SX250.jpg', category: 'Fiction' },
+        { title: 'Book Title 4', author: 'Author Name', price: 29.99, image: 'https://m.media-amazon.com/images/I/51Cfkx2GG0L.AC_SX250.jpg', category: 'Non-Fiction' },
+        { title: 'Book Title 5', author: 'Author Name', price: 17.99, image: 'https://m.media-amazon.com/images/I/51AjHl6QntL.AC_SX250.jpg', category: 'Fiction' },
+        { title: 'Book Title 6', author: 'Author Name', price: 22.99, image: 'https://m.media-amazon.com/images/I/515n5lr+lVL.AC_SX250.jpg', category: 'Non-Fiction' },
+        { title: 'Book Title 7', author: 'Author Name', price: 15.99, image: 'https://m.media-amazon.com/images/I/51ykfo56wNL.AC_SX250.jpg', category: 'Fiction' },
+        { title: 'Book Title 8', author: 'Author Name', price: 27.99, image: 'https://m.media-amazon.com/images/I/51xbrR1AxbL.AC_SX250.jpg', category: 'Non-Fiction' },
+    ];
 
     let cart = JSON.parse(localStorage.getItem('cart')) || { items: [], count: 0, total: 0 };
 
-    const fetchBooks = async () => {
-        try {
-            const response = await fetch('http://localhost:3000/api/books');
-            if (!response.ok) throw new Error('Failed to fetch books');
-            const books = await response.json();
-            displayBooks(books);
-        } catch (error) {
-            console.error('Error fetching books:', error);
-            booksSection.innerHTML = '<p>Error loading books. Please try again later.</p>';
-        }
-    };
-
-    const displayBooks = (books) => {
+    const displayBooks = (filteredBooks = books) => {
         booksSection.innerHTML = '';
-        books.forEach(book => {
+        filteredBooks.forEach(book => {
             const bookDiv = document.createElement('div');
-            bookDiv.classList.add('book');
+            bookDiv.className = 'col-12 col-sm-6 col-md-4 col-lg-3';
             bookDiv.innerHTML = `
-                <img src="${book.image || 'https://via.placeholder.com/150'}" alt="${book.title}">
-                <h2>${book.title}</h2>
-                < —
-
-System: p>Author: ${book.author}</p>
-                <p>Price: $${book.price.toFixed(2)}</p>
-                <button class="add-to-cart" data-title="${book.title}" data-price="${book.price}">Add to Cart</button>
+                <div class="card book-card animate__animated animate__fadeInUp h-100">
+                    <img src="${book.image || 'https://via.placeholder.com/150'}" class="card-img-top" alt="${book.title}">
+                    <div class="card-body">
+                        <h5 class="card-title">${book.title}</h5>
+                        <p class="card-text">Author: ${book.author}</p>
+                        <p class="card-text">Price: $${book.price.toFixed(2)}</p>
+                        <p class="card-text">Category: ${book.category}</p>
+                        <button class="btn btn-success add-to-cart" data-title="${book.title}" data-price="${book.price}" data-bs-toggle="tooltip" title="Add to Cart">Add to Cart</button>
+                    </div>
+                </div>
             `;
             booksSection.appendChild(bookDiv);
         });
         attachCartListeners();
+        // Reinitialize tooltips
+        const newTooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        [...newTooltips].forEach(tooltip => new bootstrap.Tooltip(tooltip));
     };
 
     const updateCartDisplay = () => {
-        cartItems.innerText = cart.count;
-        cartTotal.innerText = `$${cart.total.toFixed(2)}`;
+        cartItems.textContent = cart.count;
+        cartTotal.textContent = `$${cart.total.toFixed(2)}`;
         cartList.innerHTML = '';
         cart.items.forEach((item, index) => {
             const listItem = document.createElement('li');
+            listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
             listItem.innerHTML = `
-                ${item.title} ($${item.price.toFixed(2)})
-                <button class="remove-item" data-index="${index}">Remove</button>
+                ${item.title} ($${item.price.toFixed(2)} x ${item.quantity})
+                <div class="quantity-controls">
+                    <button class="btn btn-sm btn-primary decrement" data-index="${index}">-</button>
+                    <span class="mx-2">${item.quantity}</span>
+                    <button class="btn btn-sm btn-primary increment" data-index="${index}">+</button>
+                    <button class="btn btn-sm btn-danger remove-item ms-2" data-index="${index}" data-bs-toggle="tooltip" title="Remove">Remove</button>
+                </div>
             `;
             cartList.appendChild(listItem);
         });
         document.querySelectorAll('.remove-item').forEach(button => {
-            button.addEventListener('click', () => removeFromCart(button.dataset.index));
+            button.addEventListener('click', () => {
+                button.classList.add('animate__animated', 'animate__pulse');
+                removeFromCart(button.dataset.index);
+                setTimeout(() => button.classList.remove('animate__animated', 'animate__pulse'), 300);
+            });
+        });
+        document.querySelectorAll('.increment').forEach(button => {
+            button.addEventListener('click', () => {
+                button.classList.add('animate__animated', 'animate__pulse');
+                changeQuantity(button.dataset.index, 1);
+                setTimeout(() => button.classList.remove('animate__animated', 'animate__pulse'), 300);
+            });
+        });
+        document.querySelectorAll('.decrement').forEach(button => {
+            button.addEventListener('click', () => {
+                button.classList.add('animate__animated', 'animate__pulse');
+                changeQuantity(button.dataset.index, -1);
+                setTimeout(() => button.classList.remove('animate__animated', 'animate__pulse'), 300);
+            });
         });
         localStorage.setItem('cart', JSON.stringify(cart));
     };
@@ -62,66 +101,139 @@ System: p>Author: ${book.author}</p>
     const attachCartListeners = () => {
         document.querySelectorAll('.add-to-cart').forEach(button => {
             button.addEventListener('click', () => {
+                button.classList.add('animate__animated', 'animate__pulse');
                 const title = button.getAttribute('data-title');
                 const price = parseFloat(button.getAttribute('data-price'));
-                cart.items.push({ title, price });
-                cart.count++;
-                cart.total += price;
+                const existingItem = cart.items.find(item => item.title === title);
+                if (existingItem) {
+                    existingItem.quantity++;
+                    cart.count++;
+                    cart.total += price;
+                } else {
+                    cart.items.push({ title, price, quantity: 1 });
+                    cart.count++;
+                    cart.total += price;
+                }
                 updateCartDisplay();
+                setTimeout(() => button.classList.remove('animate__animated', 'animate__pulse'), 300);
             });
         });
     };
 
+    const changeQuantity = (index, change) => {
+        const item = cart.items[index];
+        item.quantity += change;
+        cart.count += change;
+        cart.total += change * item.price;
+        if (item.quantity <= 0) {
+            cart.items.splice(index, 1);
+            cart.count = Math.max(0, cart.count);
+            cart.total = Math.max(0, cart.total);
+        }
+        updateCartDisplay();
+    };
+
     const removeFromCart = (index) => {
         const item = cart.items[index];
-        cart.count--;
-        cart.total -= item.price;
+        cart.count -= item.quantity;
+        cart.total -= item.price * item.quantity;
         cart.items.splice(index, 1);
         updateCartDisplay();
     };
 
-    iconCart.addEventListener('click', () => {
-        body.classList.toggle('showCart');
+    const applyFilters = () => {
+        let filteredBooks = [...books];
+        const query = searchInput.value.toLowerCase();
+        const category = categorySelect.value;
+        const sort = sortBy.value;
+
+        if (query) {
+            filteredBooks = filteredBooks.filter(book =>
+                book.title.toLowerCase().includes(query) ||
+                book.author.toLowerCase().includes(query)
+            );
+        }
+
+        if (category !== 'all') {
+            filteredBooks = filteredBooks.filter(book => book.category === category);
+        }
+
+        if (sort) {
+            if (sort === 'price-asc') {
+                filteredBooks.sort((a, b) => a.price - b.price);
+            } else if (sort === 'price-desc') {
+                filteredBooks.sort((a, b) => b.price - a.price);
+            } else if (sort === 'title') {
+                filteredBooks.sort((a, b) => a.title.localeCompare(b.title));
+            }
+        }
+
+        displayBooks(filteredBooks);
+    };
+
+    const updateUsernameDisplay = () => {
+        const username = localStorage.getItem('username');
+        if (username) {
+            usernameDisplay.textContent = `Welcome, ${username}`;
+            loginLink.classList.add('d-none');
+            signinLink.classList.add('d-none');
+            logoutBtn.classList.remove('d-none');
+        } else {
+            usernameDisplay.textContent = '';
+            loginLink.classList.remove('d-none');
+            signinLink.classList.remove('d-none');
+            logoutBtn.classList.add('d-none');
+        }
+    };
+
+    cartBtn.addEventListener('click', () => {
+        cartList.classList.add('animate__animated', 'animate__slideInRight');
+        setTimeout(() => cartList.classList.remove('animate__animated', 'animate__slideInRight'), 500);
     });
 
-    closeCart.addEventListener('click', () => {
-        body.classList.remove('showCart');
-    });
-
-    checkOut.addEventListener('click', async () => {
+    checkOut.addEventListener('click', () => {
+        checkOut.classList.add('animate__animated', 'animate__pulse');
         if (cart.count === 0) {
             alert('Your cart is empty!');
+            setTimeout(() => checkOut.classList.remove('animate__animated', 'animate__pulse'), 300);
             return;
         }
         const token = localStorage.getItem('token');
         if (!token) {
             alert('Please log in or sign in to checkout.');
             window.location.href = 'login.html';
+            setTimeout(() => checkOut.classList.remove('animate__animated', 'animate__pulse'), 300);
             return;
         }
-        try {
-            const response = await fetch('http://localhost:3000/api/checkout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({ token, cart }),
-            });
-            const data = await response.json();
-            if (data.success) {
-                alert(`Checkout successful! Total: $${cart.total.toFixed(2)}`);
-                cart = { items: [], count: 0, total: 0 };
-                updateCartDisplay();
-                body.classList.remove('showCart');
-            } else {
-                alert(data.error);
-            }
-        } catch (error) {
-            alert('Checkout failed. Please try again.');
-        }
+        alert(`Checkout successful! Total: $${cart.total.toFixed(2)}`);
+        cart = { items: [], count: 0, total: 0 };
+        updateCartDisplay();
+        setTimeout(() => checkOut.classList.remove('animate__animated', 'animate__pulse'), 300);
     });
 
-    fetchBooks();
-    updateCartDisplay();
+    searchInput.addEventListener('input', applyFilters);
+    categorySelect.addEventListener('change', applyFilters);
+    sortBy.addEventListener('change', applyFilters);
+
+    logoutBtn.addEventListener('click', () => {
+        logoutBtn.classList.add('animate__animated', 'animate__pulse');
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        localStorage.removeItem('cart');
+        localStorage.removeItem('rememberedEmail');
+        updateUsernameDisplay();
+        updateCartDisplay();
+        alert('Logged out successfully!');
+        window.location.reload();
+        setTimeout(() => logoutBtn.classList.remove('animate__animated', 'animate__pulse'), 300);
+    });
+
+    try {
+        updateUsernameDisplay();
+        displayBooks();
+        updateCartDisplay();
+    } catch (error) {
+        console.error('Error in main.js:', error);
+        alert('Error loading books. Please check the console for details.');
+    }
 });

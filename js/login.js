@@ -1,38 +1,40 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const rememberMe = document.getElementById('rememberMe');
 
-    loginForm.addEventListener('submit', async (e) => {
+    // Populate email if remembered
+    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    if (rememberedEmail) {
+        emailInput.value = rememberedEmail;
+        rememberMe.checked = true;
+    }
+
+    loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
 
-        if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-            alert('Please enter a valid email address');
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        // Retrieve user data from localStorage
+        const userData = JSON.parse(localStorage.getItem('userData'));
+
+        if (!userData || userData.email !== email || userData.password !== password) {
+            alert('Invalid email or password. Please try again or sign in.');
             return;
         }
 
-        if (password.length < 6) {
-            alert('Password must be at least 6 characters long');
-            return;
+        // Save login details
+        localStorage.setItem('username', userData.username);
+        localStorage.setItem('token', 'mock-token');
+        if (rememberMe.checked) {
+            localStorage.setItem('rememberedEmail', email);
+        } else {
+            localStorage.removeItem('rememberedEmail');
         }
 
-        try {
-            const response = await fetch('http://localhost:3000/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-            const data = await response.json();
-            if (data.token) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('username', data.username);
-                alert('Login successful! Redirecting to homepage...');
-                window.location.href = 'index.html';
-            } else {
-                alert(data.error);
-            }
-        } catch (error) {
-            alert('Login failed. Please try again.');
-        }
+        alert('Login successful! Redirecting to homepage...');
+        window.location.href = 'index.html';
     });
 });

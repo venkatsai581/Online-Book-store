@@ -1,65 +1,68 @@
-async function sendOTP() {
-    const username = document.getElementById('username').value;
-    const mobileNo = document.getElementById('mobileno').value;
-    if (!username) {
-        alert('Please enter a username');
-        return;
-    }
-    if (!mobileNo.match(/^\d{10}$/)) {
-        alert('Please enter a valid 10-digit mobile number');
-        return;
-    }
-    try {
-        const response = await fetch('http://localhost:3000/api/send-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, mobileNo }),
-        });
-        const data = await response.json();
-        if (data.success) {
-            alert('OTP sent to your mobile number');
-        } else {
-            alert(data.error);
+document.addEventListener('DOMContentLoaded', () => {
+    const signinForm = document.getElementById('signinForm');
+    const usernameInput = document.getElementById('username');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const captchaInput = document.getElementById('captcha');
+    const otpInput = document.getElementById('otp');
+    const sendOtpBtn = document.getElementById('sendOtpBtn');
+
+    // Generate a random OTP
+    const generateOTP = () => {
+        return Math.floor(100000 + Math.random() * 900000).toString();
+    };
+
+    // Store OTP temporarily
+    let currentOTP = null;
+
+    // Send OTP button handler
+    sendOtpBtn.addEventListener('click', () => {
+        const email = emailInput.value.trim();
+        if (!email) {
+            alert('Please enter a valid email address before sending OTP.');
+            return;
         }
-    } catch (error) {
-        alert('Error sending OTP');
-    }
-}
+        currentOTP = generateOTP();
+        console.log(`Your OTP is: ${currentOTP}`);
+        alert(`Your OTP is: ${currentOTP} (also check console)`);
+    });
 
-async function signIn() {
-    const username = document.getElementById('username').value;
-    const mobileNo = document.getElementById('mobileno').value;
-    const otp = document.getElementById('otp').value;
+    signinForm.addEventListener('submit', (e) => {
+        e.preventDefault();
 
-    if (!username) {
-        alert('Please enter a username');
-        return;
-    }
-    if (!mobileNo.match(/^\d{10}$/)) {
-        alert('Please enter a valid 10-digit mobile number');
-        return;
-    }
-    if (!otp) {
-        alert('Please enter the OTP');
-        return;
-    }
+        const username = usernameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+        const captcha = captchaInput.value.trim();
+        const otp = otpInput.value.trim();
 
-    try {
-        const response = await fetch('http://localhost:3000/api/verify-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, mobileNo, otp }),
-        });
-        const data = await response.json();
-        if (data.token) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('username', data.username);
-            alert(`Welcome, ${username}! Sign-in successful.`);
-            window.location.href = 'index.html';
-        } else {
-            alert(data.error);
+        // CAPTCHA validation
+        if (captcha !== '5') {
+            alert('Invalid CAPTCHA! Please answer: What is 2 + 3?');
+            return;
         }
-    } catch (error) {
-        alert('Sign-in failed. Please try again.');
-    }
-}
+
+        // OTP validation
+        if (!currentOTP) {
+            alert('Please click "Send OTP" to receive an OTP.');
+            return;
+        }
+        if (otp !== currentOTP) {
+            alert('Invalid OTP! Please check the console or alert for the correct OTP.');
+            return;
+        }
+
+        // Store user data in localStorage
+        const userData = {
+            username,
+            email,
+            password
+        };
+        localStorage.setItem('userData', JSON.stringify(userData));
+        localStorage.setItem('username', username);
+        localStorage.setItem('token', 'mock-token'); // Mock token for authentication
+
+        alert('Sign In successful! Redirecting to homepage...');
+        window.location.href = 'index.html';
+    });
+});
