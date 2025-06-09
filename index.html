@@ -7,21 +7,20 @@
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Animate.css -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Bookstore</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <a class="navbar-brand" href="#">Online Bookstore</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
-                        <span class="nav-link" id="usernameDisplay"></span>
+                        <span id="usernameDisplay" class="text-light me-2"></span>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="login.html" id="loginLink">Login</a>
@@ -30,95 +29,54 @@
                         <a class="nav-link" href="signin.html" id="signinLink">Sign In</a>
                     </li>
                     <li class="nav-item">
-                        <button class="btn btn-outline-light d-none" id="logoutBtn">Logout</button>
+                        <button class="btn btn-danger d-none" id="logoutBtn" data-bs-toggle="tooltip" title="Logout">Logout</button>
                     </li>
                     <li class="nav-item">
-                        <button class="btn btn-primary position-relative" id="cartBtn" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
-                            Cart
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cartItems">0</span>
+                        <button class="btn btn-success ms-2" id="cartBtn" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas" aria-controls="cartOffcanvas">
+                            Cart (<span id="cartItems">0</span>)
                         </button>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
-
-    <!-- Error Modal -->
-    <div class="modal fade" id="errorModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Error</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <main class="container my-4 mx-auto">
+        <div class="row mb-4 filters justify-content-center">
+            <div class="col-12 col-sm-4 col-md-3 mb-2">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search books...">
+            </div>
+            <div class="col-12 col-sm-4 col-md-3 mb-2">
+                <select id="categorySelect" class="form-select">
+                    <option value="all">All Categories</option>
+                    <option value="Fiction">Fiction</option>
+                    <option value="Non-Fiction">Non-Fiction</option>
+                </select>
+            </div>
+            <div class="col-12 col-sm-4 col-md-3 mb-2">
+                <select id="sortBy" class="form-select">
+                    <option value="">Sort By: None</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="title">Title: A-Z</option>
+                </select>
+            </div>
+        </div>
+        <div class="row books justify-content-center" id="booksSection"></div>
+        <!-- Offcanvas Cart -->
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="cartOffcanvas" aria-labelledby="cartOffcanvasLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="cartOffcanvasLabel">Your Cart</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <ul class="list-group listCart" id="cartList"></ul>
+                <div class="cartTotal mt-3">
+                    Total: $<span id="cartTotal">0.00</span>
                 </div>
-                <div class="modal-body">
-                    <p id="errorMessage"></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
+                <button class="btn btn-primary checkOut mt-3 w-100" data-bs-toggle="tooltip" title="Proceed to Checkout">Check Out</button>
             </div>
         </div>
-    </div>
-
-    <!-- Profile Section -->
-    <div class="container my-4" id="profileSection" style="display: none;">
-        <div class="card">
-            <div class="card-header">
-                <h3>User Profile</h3>
-            </div>
-            <div class="card-body">
-                <p><strong>Full Name:</strong> <span id="profileFullName">Not provided</span></p>
-                <p><strong>Email:</strong> <span id="profileEmail">Not provided</span></p>
-                <p><strong>Phone:</strong> <span id="profilePhone">Not provided</span></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filters -->
-    <div class="container my-4">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" id="searchInput" placeholder="Search books by title or author">
-                    <select class="form-select" id="categorySelect">
-                        <option value="all">All Categories</option>
-                    </select>
-                    <select class="form-select" id="sortBy">
-                        <option value="">Sort By</option>
-                        <option value="price-asc">Price: Low to High</option>
-                        <option value="price-desc">Price: High to Low</option>
-                        <option value="title">Title</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Books Section -->
-    <div class="container">
-        <div class="row" id="booksSection">
-            <div class="col-12 text-center" id="noBooksMessage" style="display: none;">
-                <p>No books found.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Cart Offcanvas -->
-    <div class="offcanvas offcanvas-end" id="cartOffcanvas">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title">Your Cart</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-        </div>
-        <div class="offcanvas-body">
-            <ul class="list-group" id="cartList"></ul>
-            <div class="mt-3">
-                <h5>Total: <span id="cartTotal">$0.00</span></h5>
-                <button class="btn btn-success checkOut w-100">Checkout</button>
-            </div>
-        </div>
-    </div>
-
+    </main>
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/main.js"></script>

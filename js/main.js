@@ -1,9 +1,8 @@
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     const cartItems = document.getElementById('cartItems');
     const cartList = document.getElementById('cartList');
     const cartTotal = document.getElementById('cartTotal');
     const booksSection = document.getElementById('booksSection');
-    const noBooksMessage = document.getElementById('noBooksMessage');
     const cartBtn = document.getElementById('cartBtn');
     const checkOut = document.querySelector('.checkOut');
     const searchInput = document.getElementById('searchInput');
@@ -13,103 +12,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loginLink = document.getElementById('loginLink');
     const signinLink = document.getElementById('signinLink');
     const logoutBtn = document.getElementById('logoutBtn');
-    const profileSection = document.getElementById('profileSection');
-    const profileFullName = document.getElementById('profileFullName');
-    const profileEmail = document.getElementById('profileEmail');
-    const profilePhone = document.getElementById('profilePhone');
-    const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
-    const errorMessage = document.getElementById('errorMessage');
 
-    let books = [];
-    let categories = [];
+    // Initialize Bootstrap tooltips
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    [...tooltipTriggerList].forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+    // Static book data with categories
+    const books = [
+        { title: 'Book Title 1', author: 'Author Name', price: 19.99, image: 'https://m.media-amazon.com/images/I/51xbrR1AxbL.AC_SX250.jpg', category: 'Fiction' },
+        { title: 'Book Title 2', author: 'Author Name', price: 24.99, image: 'https://m.media-amazon.com/images/I/41n4z8Xv1BL.AC_SX250.jpg', category: 'Non-Fiction' },
+        { title: 'Book Title 3', author: 'Author Name', price: 14.99, image: 'https://m.media-amazon.com/images/I/51Lq5EZahEL.AC_SX250.jpg', category: 'Fiction' },
+        { title: 'Book Title 4', author: 'Author Name', price: 29.99, image: 'https://m.media-amazon.com/images/I/51Cfkx2GG0L.AC_SX250.jpg', category: 'Non-Fiction' },
+        { title: 'Book Title 5', author: 'Author Name', price: 17.99, image: 'https://m.media-amazon.com/images/I/51AjHl6QntL.AC_SX250.jpg', category: 'Fiction' },
+        { title: 'Book Title 6', author: 'Author Name', price: 22.99, image: 'https://m.media-amazon.com/images/I/515n5lr+lVL.AC_SX250.jpg', category: 'Non-Fiction' },
+        { title: 'Book Title 7', author: 'Author Name', price: 15.99, image: 'https://m.media-amazon.com/images/I/51ykfo56wNL.AC_SX250.jpg', category: 'Fiction' },
+        { title: 'Book Title 8', author: 'Author Name', price: 27.99, image: 'https://m.media-amazon.com/images/I/51xbrR1AxbL.AC_SX250.jpg', category: 'Non-Fiction' },
+    ];
+
     let cart = { items: [], count: 0, total: 0 };
     const userId = localStorage.getItem('userId');
-    const username = localStorage.getItem('username');
-
-    const showError = (message) => {
-        errorMessage.textContent = message;
-        errorModal.show();
-    };
-
-    // Check if server is running
-    const checkServer = async () => {
-        try {
-            const response = await fetch('http://localhost:3000/');
-            return response.ok;
-        } catch {
-            return false;
-        }
-    };
-
-    // Fetch books and categories
-    const fetchBooksAndCategories = async () => {
-        try {
-            const serverRunning = await checkServer();
-            if (!serverRunning) {
-                throw new Error('Backend server is not running. Please start the server at http://localhost:3000.');
-            }
-
-            const booksResponse = await fetch('http://localhost:3000/books');
-            if (!booksResponse.ok) throw new Error('Failed to fetch books: ' + booksResponse.statusText);
-            books = await booksResponse.json();
-            console.log('Fetched books:', books);
-
-            const categoriesResponse = await fetch('http://localhost:3000/categories');
-            if (!categoriesResponse.ok) throw new Error('Failed to fetch categories: ' + categoriesResponse.statusText);
-            categories = await categoriesResponse.json();
-            console.log('Fetched categories:', categories);
-
-            // Populate category select
-            categorySelect.innerHTML = '<option value="all">All Categories</option>';
-            categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category.id;
-                option.textContent = category.name;
-                categorySelect.appendChild(option);
-            });
-
-            displayBooks();
-        } catch (error) {
-            console.error('Error fetching books or categories:', error);
-            showError(`Error loading books: ${error.message}. Please ensure the server is running and try refreshing the page.`);
-        }
-    };
-
-    // Fetch and display profile data
-    const fetchProfileData = async () => {
-        if (!userId) return;
-        try {
-            const userResponse = await fetch(`http://localhost:3000/users?id=${userId}`);
-            if (!userResponse.ok) throw new Error('Failed to fetch user data');
-            const users = await userResponse.json();
-
-            const profileResponse = await fetch(`http://localhost:3000/profiles?userId=${userId}`);
-            if (!profileResponse.ok) throw new Error('Failed to fetch profile data');
-            const profiles = await profileResponse.json();
-
-            if (users.length > 0 && profiles.length > 0) {
-                const user = users[0];
-                const profile = profiles[0];
-                profileFullName.textContent = profile.fullName || 'Not provided';
-                profileEmail.textContent = user.email || 'Not provided';
-                profilePhone.textContent = profile.phone || 'Not provided';
-                profileSection.style.display = 'block';
-            } else {
-                profileSection.style.display = 'block';
-            }
-        } catch (error) {
-            console.error('Error fetching profile data:', error);
-            showError('Error loading profile data.');
-        }
-    };
 
     const displayBooks = (filteredBooks = books) => {
         booksSection.innerHTML = '';
-        if (filteredBooks.length === 0) {
-            noBooksMessage.style.display = 'block';
-            return;
-        }
-        noBooksMessage.style.display = 'none';
         filteredBooks.forEach(book => {
             const bookDiv = document.createElement('div');
             bookDiv.className = 'col-12 col-sm-6 col-md-4 col-lg-3';
@@ -120,14 +44,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <h5 class="card-title">${book.title}</h5>
                         <p class="card-text">Author: ${book.author}</p>
                         <p class="card-text">Price: $${book.price.toFixed(2)}</p>
-                        <p class="card-text">Category: ${categories.find(cat => cat.id === book.categoryId)?.name || 'Unknown'}</p>
+                        <p class="card-text">Category: ${book.category}</p>
                         <button class="btn btn-success add-to-cart" data-title="${book.title}" data-price="${book.price}" data-bs-toggle="tooltip" title="Add to Cart">Add to Cart</button>
                     </div>
                 </div>
             `;
             booksSection.appendChild(bookDiv);
         });
-        console.log('Books displayed:', filteredBooks);
         attachCartListeners();
         const newTooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
         [...newTooltips].forEach(tooltip => new bootstrap.Tooltip(tooltip));
@@ -137,7 +60,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!userId) return;
         try {
             const response = await fetch(`http://localhost:3000/cart?userId=${userId}`);
-            if (!response.ok) throw new Error('Failed to fetch cart');
             const carts = await response.json();
             if (carts.length > 0) {
                 cart = carts[0];
@@ -152,13 +74,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateCartDisplay();
         } catch (error) {
             console.error('Error fetching cart:', error);
-            showError('Error loading cart. Please try again.');
         }
     };
 
     const updateCartDisplay = () => {
         cartItems.textContent = cart.count;
-        cartTotal.textContent = `$${(Math.round(cart.total * 100) / 100).toFixed(2)}`;
+        cartTotal.textContent = `$${cart.total.toFixed(2)}`;
         cartList.innerHTML = '';
         cart.items.forEach((item, index) => {
             const listItem = document.createElement('li');
@@ -195,8 +116,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 setTimeout(() => button.classList.remove('animate__animated', 'animate__pulse'), 300);
             });
         });
-        const newTooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-        [...newTooltips].forEach(tooltip => new bootstrap.Tooltip(tooltip));
     };
 
     const attachCartListeners = () => {
@@ -215,7 +134,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     cart.count++;
                     cart.total += price;
                 }
-                cart.total = Math.round(cart.total * 100) / 100;
                 await updateCartOnServer();
                 updateCartDisplay();
                 setTimeout(() => button.classList.remove('animate__animated', 'animate__pulse'), 300);
@@ -227,7 +145,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!userId) return;
         try {
             const response = await fetch(`http://localhost:3000/cart?userId=${userId}`);
-            if (!response.ok) throw new Error('Failed to fetch cart for update');
             const carts = await response.json();
             if (carts.length > 0) {
                 await fetch(`http://localhost:3000/cart/${carts[0].id}`, {
@@ -244,7 +161,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } catch (error) {
             console.error('Error updating cart:', error);
-            showError('Error updating cart.');
         }
     };
 
@@ -258,7 +174,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             cart.count = Math.max(0, cart.count);
             cart.total = Math.max(0, cart.total);
         }
-        cart.total = Math.round(cart.total * 100) / 100;
         await updateCartOnServer();
         updateCartDisplay();
     };
@@ -268,38 +183,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         cart.count -= item.quantity;
         cart.total -= item.price * item.quantity;
         cart.items.splice(index, 1);
-        cart.count = Math.max(0, cart.count);
-        cart.total = Math.max(0, Math.round(cart.total * 100) / 100);
         await updateCartOnServer();
         updateCartDisplay();
     };
 
-    const saveOrder = async () => {
-        if (!userId || !username) return;
-        try {
-            const order = {
-                userId,
-                username,
-                items: cart.items,
-                total: Math.round(cart.total * 100) / 100,
-                date: new Date().toISOString()
-            };
-            const response = await fetch('http://localhost:3000/orders', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(order)
-            });
-            if (!response.ok) throw new Error('Failed to save order');
-            console.log('Order saved:', await response.json());
-        } catch (error) {
-            console.error('Error saving order:', error);
-            showError('Error saving order.');
-        }
-    };
-
     const applyFilters = () => {
         let filteredBooks = [...books];
-        const query = searchInput.value.toLowerCase().trim();
+        const query = searchInput.value.toLowerCase();
         const category = categorySelect.value;
         const sort = sortBy.value;
 
@@ -311,14 +201,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (category !== 'all') {
-            filteredBooks = filteredBooks.filter(book => book.categoryId === parseInt(category));
+            filteredBooks = filteredBooks.filter(book => book.category === category);
         }
 
         if (sort) {
             if (sort === 'price-asc') {
                 filteredBooks.sort((a, b) => a.price - b.price);
             } else if (sort === 'price-desc') {
-                filteredBooks.sort((a, b) => b.price - b.price);
+                filteredBooks.sort((a, b) => b.price - a.price);
             } else if (sort === 'title') {
                 filteredBooks.sort((a, b) => a.title.localeCompare(b.title));
             }
@@ -339,7 +229,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             loginLink.classList.remove('d-none');
             signinLink.classList.remove('d-none');
             logoutBtn.classList.add('d-none');
-            profileSection.style.display = 'none';
         }
     };
 
@@ -351,19 +240,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     checkOut.addEventListener('click', async () => {
         checkOut.classList.add('animate__animated', 'animate__pulse');
         if (cart.count === 0) {
-            showError('Your cart is empty!');
+            alert('Your cart is empty!');
             setTimeout(() => checkOut.classList.remove('animate__animated', 'animate__pulse'), 300);
             return;
         }
         const token = localStorage.getItem('token');
         if (!token) {
-            showError('Please log in or sign in to checkout.');
+            alert('Please log in or sign in to checkout.');
             window.location.href = 'login.html';
             setTimeout(() => checkOut.classList.remove('animate__animated', 'animate__pulse'), 300);
             return;
         }
-        await saveOrder();
-        showError(`Checkout successful! Total: $${(Math.round(cart.total * 100) / 100).toFixed(2)}`);
+        alert(`Checkout successful! Total: $${cart.total.toFixed(2)}`);
         cart = { items: [], count: 0, total: 0, userId };
         await updateCartOnServer();
         updateCartDisplay();
@@ -376,29 +264,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     logoutBtn.addEventListener('click', async () => {
         logoutBtn.classList.add('animate__animated', 'animate__pulse');
-        await updateCartOnServer();
         localStorage.removeItem('token');
         localStorage.removeItem('username');
         localStorage.removeItem('userId');
         localStorage.removeItem('rememberedEmail');
         cart = { items: [], count: 0, total: 0, userId: null };
+        await updateCartOnServer();
         updateUsernameDisplay();
         updateCartDisplay();
-        showError('Logged out successfully!');
+        alert('Logged out successfully!');
         window.location.reload();
         setTimeout(() => logoutBtn.classList.remove('animate__animated', 'animate__pulse'), 300);
     });
 
     try {
         updateUsernameDisplay();
-        await Promise.all([
-            fetchBooksAndCategories(),
-            fetchCart(),
-            fetchProfileData()
-        ]);
-        console.log('All async operations completed');
+        displayBooks();
+        fetchCart();
     } catch (error) {
         console.error('Error in main.js:', error);
-        showError('Error initializing application: ' + error.message);
+        alert('Error loading books or cart. Please check the console.');
     }
 });

@@ -17,15 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = emailInput.value.trim();
         const password = passwordInput.value.trim();
 
-        if (!email || !password) {
-            alert('Please fill in all fields.');
-            return;
-        }
-
         try {
             // Retrieve user data from JSON Server
             const response = await fetch(`http://localhost:3000/users?email=${email}&password=${password}`);
-            if (!response.ok) throw new Error('Failed to fetch user data');
             const users = await response.json();
 
             if (users.length === 0) {
@@ -35,14 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const user = users[0];
             console.log('Logged in user:', user);
-
-            // Fetch profile data
-            const profileResponse = await fetch(`http://localhost:3000/profiles?userId=${user.id}`);
-            if (!profileResponse.ok) throw new Error('Failed to fetch profile data');
-            const profiles = await profileResponse.json();
-            if (profiles.length > 0) {
-                console.log('User profile:', profiles[0]);
-            }
 
             // Save login details
             localStorage.setItem('username', user.username);
@@ -58,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'index.html';
         } catch (error) {
             console.error('Error during login:', error);
-            alert('Error during login. Please ensure the server is running and try again.');
+            alert('Error during login. Please try again.');
         }
     });
 });
