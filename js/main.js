@@ -186,6 +186,26 @@ document.addEventListener('DOMContentLoaded', () => {
         await updateCartOnServer();
         updateCartDisplay();
     };
+    async function saveOrder(orders) {
+    try {
+        const response = await fetch('http://localhost:3000/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orders)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to save order: Status ${response.status}, ${errorText}`);
+        }
+
+        const savedOrder = await response.json();
+        console.log('Order saved:', savedOrder);
+    } catch (error) {
+        console.error('Error saving order:', error.message);
+    }
+}
+
 
     const applyFilters = () => {
         let filteredBooks = [...books];
@@ -238,25 +258,50 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     checkOut.addEventListener('click', async () => {
-        checkOut.classList.add('animate__animated', 'animate__pulse');
-        if (cart.count === 0) {
-            alert('Your cart is empty!');
-            setTimeout(() => checkOut.classList.remove('animate__animated', 'animate__pulse'), 300);
-            return;
-        }
-        const token = localStorage.getItem('token');
-        if (!token) {
-            alert('Please log in or sign in to checkout.');
-            window.location.href = 'login.html';
-            setTimeout(() => checkOut.classList.remove('animate__animated', 'animate__pulse'), 300);
-            return;
-        }
-        alert(`Checkout successful! Total: $${cart.total.toFixed(2)}`);
-        cart = { items: [], count: 0, total: 0, userId };
-        await updateCartOnServer();
-        updateCartDisplay();
+    checkOut.classList.add('animate__animated', 'animate__pulse');
+
+    if (cart.count === 0) {
+        alert('Your cart is empty!');
         setTimeout(() => checkOut.classList.remove('animate__animated', 'animate__pulse'), 300);
-    });
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('Please log in or sign in to checkout.');
+        window.location.href = 'login.html';
+        setTimeout(() => checkOut.classList.remove('animate__animated', 'animate__pulse'), 300);
+        return;
+    }
+
+    // Save order
+    const order = {
+        id: crypto.randomUUID ? crypto.randomUUID() : 'order-' + Math.random().toString(36).substr(2, 9),
+        userId,
+        items: [...cart.items], // Save a copy
+        total: cart.total,
+        timestamp: new Date().toISOString()
+    };
+
+    await saveOrder(order);
+
+    // Clear local cart object
+    cart.items = [];
+    cart.count = 0;
+    cart.total = 0;
+
+    // Update server cart with empty items
+    await updateCartOnServer();
+
+    // Update UI
+    updateCartDisplay();
+
+    alert(`Checkout successful! Total: $${order.total.toFixed(2)}`);
+
+    setTimeout(() => checkOut.classList.remove('animate__animated', 'animate__pulse'), 300);
+});
+
+
 
     searchInput.addEventListener('input', applyFilters);
     categorySelect.addEventListener('change', applyFilters);
