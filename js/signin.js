@@ -1,68 +1,111 @@
 document.addEventListener('DOMContentLoaded', () => {
     const signinForm = document.getElementById('signinForm');
-    const usernameInput = document.getElementById('username');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const captchaInput = document.getElementById('captcha');
-    const otpInput = document.getElementById('otp');
     const sendOtpBtn = document.getElementById('sendOtpBtn');
+    let generatedOtp = '';
 
-    // Generate a random OTP
-    const generateOTP = () => {
+    // Generate a random 6-digit OTP
+    const generateOtp = () => {
         return Math.floor(100000 + Math.random() * 900000).toString();
     };
 
-    // Store OTP temporarily
-    let currentOTP = null;
+    sendOtpBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const fullName = document.getElementById('fullName').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const phone = document.getElementById('phone').value.trim();
 
-    // Send OTP button handler
-    sendOtpBtn.addEventListener('click', () => {
-        const email = emailInput.value.trim();
-        if (!email) {
-            alert('Please enter a valid email address before sending OTP.');
+        if (!username || !email || !password || !fullName || !address || !phone) {
+            alert('Please fill in all fields.');
             return;
         }
-        currentOTP = generateOTP();
-        console.log(`Your OTP is: ${currentOTP}`);
-        alert(`Your OTP is: ${currentOTP} (also check console)`);
+
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('Please enter a valid email address.');
+            return;
+        }
+
+        // Basic phone validation
+        const phoneRegex = /^\+?\d{10,15}$/;
+        if (!phoneRegex.test(phone)) {
+            alert('Please enter a valid phone number (10-15 digits).');
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:3000/users?email=${email}`);
+            if (!response.ok) throw new Error('Failed to check email');
+            const users = await response.json();
+            if (users.length > 0) {
+                alert('Email already registered. Please use a different email.');
+                return;
+            }
+
+            generatedOtp = generateOtp();
+            alert(`OTP sent to your email (simulated). Use ${generatedOtp} as OTP.`);
+            sendOtpBtn.disabled = true;
+        } catch (error) {
+            console.error('Error checking email:', error);
+            alert('Error sending OTP. Please ensure the server is running and try again.');
+        }
     });
 
-    signinForm.addEventListener('submit', (e) => {
+    signinForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const fullName = document.getElementById('fullName').value.trim();
+        const address = document.getElementById('address').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const captcha = document.getElementById('captcha').value.trim();
+        const otp = document.getElementById('otp').value.trim();
 
-        const username = usernameInput.value.trim();
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
-        const captcha = captchaInput.value.trim();
-        const otp = otpInput.value.trim();
+        if (!username || !email || !password || !fullName || !address || !phone || !captcha || !otp) {
+            alert('Please fill in all fields.');
+            return;
+        }
 
-        // CAPTCHA validation
         if (captcha !== '5') {
-            alert('Invalid CAPTCHA! Please answer: What is 2 + 3?');
+            alert('Invalid CAPTCHA. Please answer: What is 2 + 3?');
             return;
         }
 
-        // OTP validation
-        if (!currentOTP) {
-            alert('Please click "Send OTP" to receive an OTP.');
-            return;
-        }
-        if (otp !== currentOTP) {
-            alert('Invalid OTP! Please check the console or alert for the correct OTP.');
+        if (otp !== generatedOtp) {
+            alert(`Invalid OTP. Please use ${generatedOtp}.`);
             return;
         }
 
-        // Store user data in localStorage
-        const userData = {
-            username,
-            email,
-            password
-        };
-        localStorage.setItem('userData', JSON.stringify(userData));
-        localStorage.setItem('username', username);
-        localStorage.setItem('token', 'mock-token'); // Mock token for authentication
+        try {
+            const user = { username, email, password };
+            const userResponse = await fetch('http://localhost:3000/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(user)
+            });
+            if (!userResponse.ok) throw new Error('Failed to save user');
+            const savedUser = await userResponse.json();
 
-        alert('Sign In successful! Redirecting to homepage...');
-        window.location.href = 'index.html';
+            const profile = { userId: savedUser.id, fullName, address, phone };
+            const profileResponse = await fetch('http://localhost:3000/profiles', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(profile)
+            });
+            if (!profileResponse.ok) throw new Error('Failed to save profile');
+
+            localStorage.setItem('token', 'mock-token');
+            localStorage.setItem('username', username);
+            localStorage.setItem('userId', savedUser.id);
+            alert('Sign-in successful! Redirecting to homepage...');
+            window.location.href = 'index.html';
+        } catch (error) {
+            console.error('Error saving user/profile:', error);
+            alert('Error signing in. Please ensure the server is running and try again.');
+        }
     });
 });

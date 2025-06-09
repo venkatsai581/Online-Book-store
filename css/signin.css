@@ -1,18 +1,24 @@
-.signin-container {
+.card {
     transition: transform 0.3s;
 }
-.signin-container:hover {
+.card:hover {
     transform: scale(1.02);
 }
-.btn-success {
+.btn-primary {
     transition: background-color 0.2s;
 }
-.btn-success:hover {
-    background-color: #218838;
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+.btn-secondary {
+    transition: background-color 0.2s;
+}
+.btn-secondary:hover {
+    background-color: #5a6268;
 }
 .form-control:focus {
-    border-color: #28a745;
-    box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 #captchaQuestion {
     font-weight: bold;

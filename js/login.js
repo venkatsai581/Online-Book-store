@@ -11,30 +11,54 @@ document.addEventListener('DOMContentLoaded', () => {
         rememberMe.checked = true;
     }
 
-    loginForm.addEventListener('submit', (e) => {
+    loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const email = emailInput.value.trim();
         const password = passwordInput.value.trim();
 
-        // Retrieve user data from localStorage
-        const userData = JSON.parse(localStorage.getItem('userData'));
-
-        if (!userData || userData.email !== email || userData.password !== password) {
-            alert('Invalid email or password. Please try again or sign in.');
+        if (!email || !password) {
+            alert('Please fill in all fields.');
             return;
         }
 
-        // Save login details
-        localStorage.setItem('username', userData.username);
-        localStorage.setItem('token', 'mock-token');
-        if (rememberMe.checked) {
-            localStorage.setItem('rememberedEmail', email);
-        } else {
-            localStorage.removeItem('rememberedEmail');
-        }
+        try {
+            // Retrieve user data from JSON Server
+            const response = await fetch(`http://localhost:3000/users?email=${email}&password=${password}`);
+            if (!response.ok) throw new Error('Failed to fetch user data');
+            const users = await response.json();
 
-        alert('Login successful! Redirecting to homepage...');
-        window.location.href = 'index.html';
+            if (users.length === 0) {
+                alert('Invalid email or password. Please try again or sign in.');
+                return;
+            }
+
+            const user = users[0];
+            console.log('Logged in user:', user);
+
+            // Fetch profile data
+            const profileResponse = await fetch(`http://localhost:3000/profiles?userId=${user.id}`);
+            if (!profileResponse.ok) throw new Error('Failed to fetch profile data');
+            const profiles = await profileResponse.json();
+            if (profiles.length > 0) {
+                console.log('User profile:', profiles[0]);
+            }
+
+            // Save login details
+            localStorage.setItem('username', user.username);
+            localStorage.setItem('token', 'mock-token');
+            localStorage.setItem('userId', user.id);
+            if (rememberMe.checked) {
+                localStorage.setItem('rememberedEmail', email);
+            } else {
+                localStorage.removeItem('rememberedEmail');
+            }
+
+            alert('Login successful! Redirecting to homepage...');
+            window.location.href = 'index.html';
+        } catch (error) {
+            console.error('Error during login:', error);
+            alert('Error during login. Please ensure the server is running and try again.');
+        }
     });
 });
