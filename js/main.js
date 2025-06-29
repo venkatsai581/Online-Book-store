@@ -21,14 +21,15 @@ document.addEventListener('DOMContentLoaded', () => {
     [...tooltipTriggerList].forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
 
     const books = [
-        { title: 'Book Title 1', author: 'Author Name', price: 19.99, image: 'https://m.media-amazon.com/images/I/51xbrR1AxbL.AC_SX250.jpg', category: 'Fiction' },
+        { title: 'Book Title 1', author: 'Author Name', price: 19.99, image: 'https://m.media-amazon.com/images/I/61id5HQ7ogL._AC_UL480_FMwebp_QL65_.jpg', category: 'Fiction' },
         { title: 'Book Title 2', author: 'Author Name', price: 24.99, image: 'https://m.media-amazon.com/images/I/41n4z8Xv1BL.AC_SX250.jpg', category: 'Non-Fiction' },
         { title: 'Book Title 3', author: 'Author Name', price: 14.99, image: 'https://m.media-amazon.com/images/I/51Lq5EZahEL.AC_SX250.jpg', category: 'Fiction' },
-        { title: 'Book Title 4', author: 'Author Name', price: 29.99, image: 'https://m.media-amazon.com/images/I/51Cfkx2GG0L.AC_SX250.jpg', category: 'Non-Fiction' },
-        { title: 'Book Title 5', author: 'Author Name', price: 17.99, image: 'https://m.media-amazon.com/images/I/51AjHl6QntL.AC_SX250.jpg', category: 'Fiction' },
+        { title: 'Book Title 4', author: 'Author Name', price: 29.99, image: 'https://m.media-amazon.com/images/I/71xxddxprOL._AC_UY327_FMwebp_QL65_.jpg', category: 'Non-Fiction' },
+        { title: 'Book Title 5', author: 'Author Name', price: 17.99, image: 'https://m.media-amazon.com/images/I/71YjdCMBmQL._AC_UY327_FMwebp_QL65_.jpg', category: 'Fiction' },
         { title: 'Book Title 6', author: 'Author Name', price: 22.99, image: 'https://m.media-amazon.com/images/I/515n5lr+lVL.AC_SX250.jpg', category: 'Non-Fiction' },
-        { title: 'Book Title 7', author: 'Author Name', price: 15.99, image: 'https://m.media-amazon.com/images/I/51ykfo56wNL.AC_SX250.jpg', category: 'Fiction' },
-        { title: 'Book Title 8', author: 'Author Name', price: 27.99, image: 'https://m.media-amazon.com/images/I/51xbrR1AxbL.AC_SX250.jpg', category: 'Non-Fiction' },
+        { title: 'Book Title 7', author: 'Author Name', price: 15.99, image: 'https://m.media-amazon.com/images/I/91g4K+FXBLL._AC_UY327_FMwebp_QL65_.jpg', category: 'Fiction' },
+        { title: 'Book Title 8', author: 'Author Name', price: 27.99, image: 'https://m.media-amazon.com/images/I/71n26QIGeVL._AC_UL480_FMwebp_QL65_.jpg', category: 'Non-Fiction' },
+        { title: 'Book Title 9', author: 'Author Name', price: 25.99, image: 'https://m.media-amazon.com/images/I/81Dky+tD+pL._AC_UY327_FMwebp_QL65_.jpg', category: 'Non-Fiction' }
     ];
 
     let cart = { items: [], count: 0, total: 0 };
